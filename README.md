@@ -1,1 +1,1 @@
-# python-sdk
+# Protein Ensemble Python SDK
