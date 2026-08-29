@@ -1,0 +1,26 @@
+[project]
+name = "python-sdk"
+version = "0.1.0"
+description = "Protein Ensemble Spec Python SDK"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "Mike Micatka", email = "mike.micatka@gmail.com" }
+]
+license = { text = "MIT" }
+
+
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+codegen = [
+    "datamodel-code-generator>=0.76.0",
+]
+dev = [
+    "pyright>=1.1.411",
+    "ruff>=0.16.5",
+]
