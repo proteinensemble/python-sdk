@@ -17,6 +17,9 @@ build-backend = "uv_build"
 codegen = ["datamodel-code-generator[http]>=0.76.0"]
 dev = ["pre-commit>=4.6.2", "pyright>=1.1.411", "ruff>=0.16.5"]
 
+[tool.ruff]
+line-length = 120
+
 [tool.ruff.lint]
 select = [
     "C4",     # flake8-comprehensions
