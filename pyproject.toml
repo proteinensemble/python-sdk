@@ -4,9 +4,7 @@ version = "0.1.0"
 description = "Protein Ensemble Spec Python SDK"
 readme = "README.md"
 requires-python = ">=3.12"
-authors = [
-    { name = "Mike Micatka", email = "mike.micatka@gmail.com" }
-]
+authors = [{ name = "Mike Micatka", email = "mike.micatka@gmail.com" }]
 license = { text = "MIT" }
 
 dependencies = []
@@ -16,16 +14,18 @@ requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-codegen = [
-    "datamodel-code-generator[http]>=0.76.0",
-]
-dev = [
-    "pre-commit>=4.6.2",
-    "pyright>=1.1.411",
-    "ruff>=0.16.5",
-]
+codegen = ["datamodel-code-generator[http]>=0.76.0"]
+dev = ["pre-commit>=4.6.2", "pyright>=1.1.411", "ruff>=0.16.5"]
 
-[tool.uv.workspace]
-members = [
-    "src/protein-ensemble-types",
+[tool.ruff.lint]
+select = [
+    "C4",     # flake8-comprehensions
+    "C90",    # mccabe
+    "D212",   # pydocstyle: multi-line docstring summary should start at the first line
+    "E",      # pycodestyle
+    "F",      # pyflakes
+    "I",      # isort
+    "PERF",   # Perflint
+    "UP",     # pyupgrade
+    "TID251", # https://docs.astral.sh/ruff/rules/banned-api/
 ]

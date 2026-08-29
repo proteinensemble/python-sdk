@@ -6,12 +6,6 @@ resolution-markers = [
     "python_full_version < '3.14'",
 ]
 
-[manifest]
-members = [
-    "protein-ensemble",
-    "protein-ensemble-types",
-]
-
 [[package]]
 name = "annotated-types"
 version = "0.8.0"
@@ -399,11 +393,6 @@ dev = [
     { name = "pyright", specifier = ">=1.1.411" },
     { name = "ruff", specifier = ">=0.16.5" },
 ]
-
-[[package]]
-name = "protein-ensemble-types"
-version = "0.1.0"
-source = { editable = "src/protein-ensemble-types" }
 
 [[package]]
 name = "pydantic"
