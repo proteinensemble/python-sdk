@@ -116,13 +116,8 @@ class Member(BaseModel):
     ]
     structure: Structure | Structure1 | Structure2
     weight: Weight | None = None
-    residue_mapping: Annotated[ResidueMapping | None, Field(alias="residueMapping")] = (
-        None
-    )
-    thermodynamics: Annotated[
-        dict[str, Any] | None,
-        Field(description="Opaque passthrough for thermodynamics."),
-    ] = None
+    residue_mapping: Annotated[ResidueMapping | None, Field(alias="residueMapping")] = None
+    thermodynamics: Annotated[dict[str, Any] | None, Field(description="Opaque passthrough for thermodynamics.")] = None
 
 
 class Model(BaseModel):
@@ -131,10 +126,7 @@ class Model(BaseModel):
         populate_by_name=True,
     )
     schema_version: Annotated[
-        Literal["0.1.0"],
-        Field(
-            alias="schemaVersion", description="The current manifest schema version."
-        ),
+        Literal["0.1.0"], Field(alias="schemaVersion", description="The current manifest schema version.")
     ]
     id: Annotated[str, Field(description="Unique ensemble ID.")]
     content_hash: Annotated[
@@ -153,13 +145,7 @@ class Model(BaseModel):
         ),
     ]
     weight_scheme: Annotated[WeightScheme | None, Field(alias="weightScheme")] = None
-    capabilities_required: Annotated[list[str], Field(alias="capabilitiesRequired")] = [
-        "STANDALONE_CIF"
-    ]
-    metadata: Annotated[
-        dict[str, Any] | None, Field(description="Opaque passthrough for metadata.")
-    ] = None
-    dynamics: Annotated[
-        dict[str, Any] | None, Field(description="Opaque passthrough for dynamics.")
-    ] = None
+    capabilities_required: Annotated[list[str], Field(alias="capabilitiesRequired")] = ["STANDALONE_CIF"]
+    metadata: Annotated[dict[str, Any] | None, Field(description="Opaque passthrough for metadata.")] = None
+    dynamics: Annotated[dict[str, Any] | None, Field(description="Opaque passthrough for dynamics.")] = None
     members: Annotated[list[Member], Field(min_length=1)]

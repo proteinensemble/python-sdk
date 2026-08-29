@@ -32,3 +32,7 @@ select = [
     "UP",     # pyupgrade
     "TID251", # https://docs.astral.sh/ruff/rules/banned-api/
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# generated code
+"src/protein_ensemble/models.py" = ["D212", "E501", "I001", "UP007", "UP037"]
