@@ -6,206 +6,122 @@
     "schemaVersion",
     "id",
     "contentHash",
-    "topologyReference",
     "members"
   ],
   "properties": {
     "schemaVersion": {
       "type": "string",
       "const": "0.1.0",
-      "description": "The current manifest schema version."
+      "description": "Version of the Protein Ensemble manifest specification."
     },
     "id": {
       "type": "string",
-      "description": "Unique ensemble ID."
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Identifier for the ensemble within its managing namespace."
     },
     "contentHash": {
       "type": "string",
-      "pattern": "^[a-zA-Z0-9_-]+:[a-fA-F0-9]+$",
-      "description": "Content hash in the format algorithm:hexdigest."
-    },
-    "topologyReference": {
-      "type": "object",
-      "description": "Identifies the topology against which ensemble members are interpreted.",
-      "oneOf": [
-        {
-          "required": ["memberId"],
-          "properties": {
-            "memberId": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        {
-          "required": ["externalReference"],
-          "properties": {
-            "externalReference": {
-              "type": "object",
-              "required": ["uri"],
-              "properties": {
-                "uri": {
-                  "type": "string",
-                  "format": "uri-reference"
-                },
-                "source": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "additionalProperties": false
-        }
-      ]
+      "pattern": "^[A-Za-z0-9_-]+:[A-Fa-f0-9]+$",
+      "description": "Content identifier for the ensemble, in the form algorithm:hexdigest."
     },
     "weightScheme": {
-      "type": "object",
-      "required": ["type"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "EQUILIBRIUM_PROBABILITY",
-            "CLUSTER_FRACTION",
-            "EXPERIMENTAL_OCCUPANCY",
-            "UNIFORM",
-            "CUSTOM"
-          ]
-        },
-        "normalized": {
-          "type": "boolean"
-        },
-        "customSemantics": {}
-      },
-      "if": {
-        "properties": {
-          "type": {
-            "const": "CUSTOM"
-          }
-        }
-      },
-      "then": {
-        "required": ["customSemantics"]
-      }
+      "$ref": "#/$defs/WeightScheme"
     },
     "capabilitiesRequired": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       },
-      "default": ["STANDALONE_CIF"]
+      "uniqueItems": true,
+      "description": "Capabilities a consumer must support to interpret this manifest."
     },
     "metadata": {
       "type": "object",
-      "description": "Opaque passthrough for metadata."
-    },
-    "dynamics": {
-      "type": "object",
-      "description": "Opaque passthrough for dynamics."
+      "description": "Non-normative metadata. Metadata fields have no PE core semantic meaning unless explicitly defined by the specification."
     },
     "members": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": ["id", "structure"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[a-zA-Z0-9_-]+$",
-            "description": "Unique member ID matching alphanumeric, hyphen, and underscore characters."
-          },
-          "structure": {
-            "type": "object",
-            "oneOf": [
-              {
-                "title": "Standalone",
-                "required": ["uri"],
-                "properties": {
-                  "uri": {
-                    "type": "string",
-                    "format": "uri-reference"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "title": "Multi-model",
-                "required": ["uri", "modelIndex"],
-                "properties": {
-                  "uri": {
-                    "type": "string",
-                    "format": "uri-reference"
-                  },
-                  "modelIndex": {
-                    "type": "integer",
-                    "minimum": 0
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "title": "Trajectory-backed",
-                "required": [
-                  "topologyUri",
-                  "trajectoryUri",
-                  "frameIndex",
-                  "trajectoryFormat"
-                ],
-                "properties": {
-                  "topologyUri": {
-                    "type": "string",
-                    "format": "uri-reference"
-                  },
-                  "trajectoryUri": {
-                    "type": "string",
-                    "format": "uri-reference"
-                  },
-                  "frameIndex": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  "trajectoryFormat": {
-                    "type": "string",
-                    "enum": ["XTC", "DCD", "TRR", "NC"]
-                  }
-                },
-                "additionalProperties": false
-              }
-            ]
-          },
-          "weight": {
-            "type": "object",
-            "required": ["value"],
-            "properties": {
-              "value": {
-                "type": "number"
-              },
-              "type": {
-                "type": "string"
-              }
-            }
-          },
-          "residueMapping": {
-            "type": "object",
-            "required": ["uri"],
-            "properties": {
-              "uri": {
-                "type": "string",
-                "format": "uri-reference"
-              },
-              "format": {
-                "type": "string"
-              }
-            }
-          },
-          "thermodynamics": {
-            "type": "object",
-            "description": "Opaque passthrough for thermodynamics."
-          }
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/Member"
+      }
+    }
+  },
+  "$defs": {
+    "WeightScheme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "UNIFORM",
+            "EQUILIBRIUM_PROBABILITY"
+          ],
+          "description": "Defines how member weights are interpreted."
         },
-        "additionalProperties": false
+        "normalized": {
+          "type": "boolean",
+          "description": "Whether explicit member weights are normalized according to the semantic contract."
+        }
+      }
+    },
+    "Member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "structure",
+        "structureHash"
+      ],
+      "properties": {
+        "structure": {
+          "$ref": "#/$defs/Structure"
+        },
+        "structureHash": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+:[A-Fa-f0-9]+$",
+          "description": "Content identifier for the referenced structural resource, in the form algorithm:hexdigest."
+        },
+        "weight": {
+          "$ref": "#/$defs/Weight"
+        }
+      }
+    },
+    "Structure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uri"
+      ],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri-reference",
+          "minLength": 1,
+          "description": "URI reference to the structural resource. Relative references are resolved relative to the manifest."
+        },
+        "modelIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based model index within the referenced structural resource. When omitted, the referenced resource represents a single structural member."
+        }
+      }
+    },
+    "Weight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "Member weight. Its interpretation and permitted range are defined by weightScheme and the semantic contract."
+        }
       }
     }
   }

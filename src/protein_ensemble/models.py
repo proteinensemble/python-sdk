@@ -6,49 +6,28 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 
-class TopologyReference(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
-    member_id: Annotated[str, Field(alias="memberId")]
-
-
-class ExternalReference(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
-    uri: str
-    source: str | None = None
-
-
-class TopologyReference1(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
-    external_reference: Annotated[ExternalReference, Field(alias="externalReference")]
+class CapabilitiesRequiredItem(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
 
 
 class Type(StrEnum):
-    equilibrium_probability = "EQUILIBRIUM_PROBABILITY"
-    cluster_fraction = "CLUSTER_FRACTION"
-    experimental_occupancy = "EXPERIMENTAL_OCCUPANCY"
     uniform = "UNIFORM"
-    custom = "CUSTOM"
+    equilibrium_probability = "EQUILIBRIUM_PROBABILITY"
 
 
 class WeightScheme(BaseModel):
     model_config = ConfigDict(
+        extra="forbid",
         populate_by_name=True,
     )
-    type: Type
-    normalized: bool | None = None
-    custom_semantics: Annotated[Any | None, Field(alias="customSemantics")] = None
+    type: Annotated[Type, Field(description="Defines how member weights are interpreted.")]
+    normalized: Annotated[
+        bool | None,
+        Field(description="Whether explicit member weights are normalized according to the semantic contract."),
+    ] = None
 
 
 class Structure(BaseModel):
@@ -56,50 +35,34 @@ class Structure(BaseModel):
         extra="forbid",
         populate_by_name=True,
     )
-    uri: str
-
-
-class Structure1(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
-    uri: str
-    model_index: Annotated[int, Field(alias="modelIndex", ge=0)]
-
-
-class TrajectoryFormat(StrEnum):
-    xtc = "XTC"
-    dcd = "DCD"
-    trr = "TRR"
-    nc = "NC"
-
-
-class Structure2(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
-    topology_uri: Annotated[str, Field(alias="topologyUri")]
-    trajectory_uri: Annotated[str, Field(alias="trajectoryUri")]
-    frame_index: Annotated[int, Field(alias="frameIndex", ge=0)]
-    trajectory_format: Annotated[TrajectoryFormat, Field(alias="trajectoryFormat")]
+    uri: Annotated[
+        str,
+        Field(
+            description="URI reference to the structural resource. Relative references are resolved relative to the manifest.",
+            min_length=1,
+        ),
+    ]
+    model_index: Annotated[
+        int | None,
+        Field(
+            alias="modelIndex",
+            description="Zero-based model index within the referenced structural resource. When omitted, the referenced resource represents a single structural member.",
+            ge=0,
+        ),
+    ] = None
 
 
 class Weight(BaseModel):
     model_config = ConfigDict(
+        extra="forbid",
         populate_by_name=True,
     )
-    value: float
-    type: str | None = None
-
-
-class ResidueMapping(BaseModel):
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    uri: str
-    format: str | None = None
+    value: Annotated[
+        float,
+        Field(
+            description="Member weight. Its interpretation and permitted range are defined by weightScheme and the semantic contract."
+        ),
+    ]
 
 
 class Member(BaseModel):
@@ -107,17 +70,16 @@ class Member(BaseModel):
         extra="forbid",
         populate_by_name=True,
     )
-    id: Annotated[
+    structure: Structure
+    structure_hash: Annotated[
         str,
         Field(
-            description="Unique member ID matching alphanumeric, hyphen, and underscore characters.",
-            pattern="^[a-zA-Z0-9_-]+$",
+            alias="structureHash",
+            description="Content identifier for the referenced structural resource, in the form algorithm:hexdigest.",
+            pattern="^[A-Za-z0-9_-]+:[A-Fa-f0-9]+$",
         ),
     ]
-    structure: Structure | Structure1 | Structure2
     weight: Weight | None = None
-    residue_mapping: Annotated[ResidueMapping | None, Field(alias="residueMapping")] = None
-    thermodynamics: Annotated[dict[str, Any] | None, Field(description="Opaque passthrough for thermodynamics.")] = None
 
 
 class Model(BaseModel):
@@ -126,26 +88,36 @@ class Model(BaseModel):
         populate_by_name=True,
     )
     schema_version: Annotated[
-        Literal["0.1.0"], Field(alias="schemaVersion", description="The current manifest schema version.")
+        Literal["0.1.0"],
+        Field(alias="schemaVersion", description="Version of the Protein Ensemble manifest specification."),
     ]
-    id: Annotated[str, Field(description="Unique ensemble ID.")]
+    id: Annotated[
+        str,
+        Field(
+            description="Identifier for the ensemble within its managing namespace.",
+            min_length=1,
+            pattern="^[A-Za-z0-9_-]+$",
+        ),
+    ]
     content_hash: Annotated[
         str,
         Field(
             alias="contentHash",
-            description="Content hash in the format algorithm:hexdigest.",
-            pattern="^[a-zA-Z0-9_-]+:[a-fA-F0-9]+$",
-        ),
-    ]
-    topology_reference: Annotated[
-        TopologyReference | TopologyReference1,
-        Field(
-            alias="topologyReference",
-            description="Identifies the topology against which ensemble members are interpreted.",
+            description="Content identifier for the ensemble, in the form algorithm:hexdigest.",
+            pattern="^[A-Za-z0-9_-]+:[A-Fa-f0-9]+$",
         ),
     ]
     weight_scheme: Annotated[WeightScheme | None, Field(alias="weightScheme")] = None
-    capabilities_required: Annotated[list[str], Field(alias="capabilitiesRequired")] = ["STANDALONE_CIF"]
-    metadata: Annotated[dict[str, Any] | None, Field(description="Opaque passthrough for metadata.")] = None
-    dynamics: Annotated[dict[str, Any] | None, Field(description="Opaque passthrough for dynamics.")] = None
-    members: Annotated[list[Member], Field(min_length=1)]
+    capabilities_required: Annotated[
+        list[CapabilitiesRequiredItem] | None,
+        Field(
+            alias="capabilitiesRequired", description="Capabilities a consumer must support to interpret this manifest."
+        ),
+    ] = None
+    metadata: Annotated[
+        dict[str, Any] | None,
+        Field(
+            description="Non-normative metadata. Metadata fields have no PE core semantic meaning unless explicitly defined by the specification."
+        ),
+    ] = None
+    members: dict[str, Member]
