@@ -25,7 +25,7 @@ DEFAULT_STRUCTURE_GLOB = "*"
 DEFAULT_HASH_ALGORITHM = "blake3"
 
 
-@click.command(help="Generate a PCE manifest bundle from a directory of structure files.")
+@click.command(help="Generate a Protein Ensemble manifest bundle from a directory of structure files.")
 @click.option(
     "--structures-dir",
     type=click.Path(exists=True, file_okay=False, path_type=Path),
