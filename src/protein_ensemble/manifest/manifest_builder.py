@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from protein_ensemble.manifest.manifest import Manifest
-from protein_ensemble.shared.exceptions import DuplicateMemberError
+from protein_ensemble.shared.exceptions import DuplicateMemberError, EmptyManifestError
 from protein_ensemble.shared.models import Member, WeightScheme
 
 
