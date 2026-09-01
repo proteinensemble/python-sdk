@@ -8,7 +8,7 @@ from pathlib import Path
 import fsspec
 from fsspec.implementations.local import LocalFileSystem
 
-from protein_ensemble.models import Structure
+from protein_ensemble.shared.models import Structure
 
 
 def stage_manifest_bundle(uri: str, *, dest_dir: Path | None = None) -> Path:

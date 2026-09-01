@@ -6,14 +6,14 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .exceptions import (
+from protein_ensemble.hashing import compute_content_hash_file, compute_manifest_content_hash, parse_content_hash
+from protein_ensemble.manifest.io import resolve_structure_path, stage_manifest_bundle
+from protein_ensemble.shared.exceptions import (
     ManifestContentHashMismatchError,
     MemberNotFoundError,
     StructureContentHashMismatchError,
 )
-from .hashing import compute_content_hash_file, compute_manifest_content_hash, parse_content_hash
-from .io import resolve_structure_path, stage_manifest_bundle
-from .models import CapabilitiesRequiredItem, Member, Model, WeightScheme
+from protein_ensemble.shared.models import CapabilitiesRequiredItem, Member, Model, WeightScheme
 
 
 class Manifest:

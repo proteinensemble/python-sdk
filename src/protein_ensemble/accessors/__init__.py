@@ -1,10 +1,12 @@
+# src/protein_ensemble/accessors/__init__.py
+
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Protocol
 
-from protein_ensemble.exceptions import UnsupportedAccessorFormatError
-from protein_ensemble.models import Member
+from protein_ensemble.shared.exceptions import UnsupportedAccessorFormatError
+from protein_ensemble.shared.models import Member
 
 
 class Accessor(Protocol):

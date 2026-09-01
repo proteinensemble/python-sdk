@@ -9,9 +9,13 @@ license = { text = "MIT" }
 
 dependencies = ["blake3>=1.0.9", "fsspec>=2026.7.0"]
 
+[project.scripts]
+generate-manifest = "protein_ensemble.cli:generate_manifest"
+
 [project.optional-dependencies]
 s3 = ["fsspec[s3]>=2026.7.0"]
 pdbqt = ["gemmi>=0.7.5", "meeko>=0.8.0"]
+cli = ["click>=8.5.0"]
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

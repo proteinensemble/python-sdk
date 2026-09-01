@@ -38,7 +38,8 @@ class Structure(BaseModel):
     uri: Annotated[
         str,
         Field(
-            description="URI reference to the structural resource. Relative references are resolved relative to the manifest.",
+            description="URI reference to the structural resource. Relative references are resolved"
+            " relative to the manifest.",
             min_length=1,
         ),
     ]
@@ -46,7 +47,8 @@ class Structure(BaseModel):
         int | None,
         Field(
             alias="modelIndex",
-            description="Zero-based model index within the referenced structural resource. When omitted, the referenced resource represents a single structural member.",
+            description="Zero-based model index within the referenced structural resource. When omitted,"
+            " the referenced resource represents a single structural member.",
             ge=0,
         ),
     ] = None
@@ -60,7 +62,8 @@ class Weight(BaseModel):
     value: Annotated[
         float,
         Field(
-            description="Member weight. Its interpretation and permitted range are defined by weightScheme and the semantic contract."
+            description="Member weight. Its interpretation and permitted range are defined by weightScheme"
+            " and the semantic contract."
         ),
     ]
 
@@ -117,7 +120,8 @@ class Model(BaseModel):
     metadata: Annotated[
         dict[str, Any] | None,
         Field(
-            description="Non-normative metadata. Metadata fields have no PE core semantic meaning unless explicitly defined by the specification."
+            description="Non-normative metadata. Metadata fields have no PE core semantic meaning unless"
+            " explicitly defined by the specification."
         ),
     ] = None
     members: dict[str, Member]

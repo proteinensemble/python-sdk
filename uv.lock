@@ -961,6 +961,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+cli = [
+    { name = "click" },
+]
 pdbqt = [
     { name = "gemmi" },
     { name = "meeko" },
@@ -982,12 +985,13 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "blake3", specifier = ">=1.0.9" },
+    { name = "click", marker = "extra == 'cli'", specifier = ">=8.5.0" },
     { name = "fsspec", specifier = ">=2026.7.0" },
     { name = "fsspec", extras = ["s3"], marker = "extra == 's3'", specifier = ">=2026.7.0" },
     { name = "gemmi", marker = "extra == 'pdbqt'", specifier = ">=0.7.5" },
     { name = "meeko", marker = "extra == 'pdbqt'", specifier = ">=0.8.0" },
 ]
-provides-extras = ["s3", "pdbqt"]
+provides-extras = ["s3", "pdbqt", "cli"]
 
 [package.metadata.requires-dev]
 codegen = [{ name = "datamodel-code-generator", extras = ["http"], specifier = ">=0.76.0" }]
