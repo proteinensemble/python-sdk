@@ -5,9 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .exceptions import DuplicateMemberError, EmptyManifestError
-from .manifest import Manifest
-from .models import Member, WeightScheme
+from protein_ensemble.manifest.manifest import Manifest
+from protein_ensemble.shared.exceptions import DuplicateMemberError
+from protein_ensemble.shared.models import Member, WeightScheme
 
 
 class ManifestBuilder:

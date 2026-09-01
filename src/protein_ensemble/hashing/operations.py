@@ -1,53 +1,11 @@
-# src/protein_ensemble/hashing.py
-
-from __future__ import annotations
+# src/protein_ensemble/hashing/operations.py
 
 import json
 from pathlib import Path
-from typing import Protocol
+from typing import Any  # Replace with actual Model import if needed
 
-import blake3
-
-from protein_ensemble.exceptions import InvalidContentHashError, UnsupportedHashAlgorithmError
-from protein_ensemble.models import Model
-
-
-class Hasher(Protocol):
-    algorithm: str
-
-    def hexdigest(self, data: bytes) -> str: ...
-
-    def hexdigest_file(self, path: Path) -> str: ...
-
-
-class Blake3Hasher:
-    algorithm = "blake3"
-
-    def hexdigest(self, data: bytes) -> str:
-        return blake3.blake3(data).hexdigest()
-
-    def hexdigest_file(self, path: Path, *, chunk_size: int = 1024 * 1024) -> str:
-        hasher = blake3.blake3()
-        with path.open("rb") as f:
-            while chunk := f.read(chunk_size):
-                hasher.update(chunk)
-        return hasher.hexdigest()
-
-
-_HASHERS: dict[str, Hasher] = {
-    "blake3": Blake3Hasher(),
-}
-
-
-def register_hasher(hasher: Hasher) -> None:
-    _HASHERS[hasher.algorithm] = hasher
-
-
-def get_hasher(algorithm: str) -> Hasher:
-    try:
-        return _HASHERS[algorithm]
-    except KeyError:
-        raise UnsupportedHashAlgorithmError(algorithm) from None
+from .exceptions import InvalidContentHashError
+from .registry import get_hasher
 
 
 def parse_content_hash(content_hash: str) -> tuple[str, str]:
@@ -77,13 +35,13 @@ def verify_content_hash(data: bytes, content_hash: str) -> bool:
     return hasher.hexdigest(data) == expected_digest
 
 
-def compute_manifest_content_hash(model: Model, *, algorithm: str = "blake3") -> str:
+def compute_manifest_content_hash(model: Any, *, algorithm: str = "blake3") -> str:
     payload = model.model_dump(mode="json", by_alias=True, exclude={"content_hash"}, exclude_none=True)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return compute_content_hash(canonical, algorithm=algorithm)
 
 
-def verify_manifest_content_hash(model: Model) -> bool:
+def verify_manifest_content_hash(model: Any) -> bool:
     expected = compute_manifest_content_hash(model)
     return expected == model.content_hash
 

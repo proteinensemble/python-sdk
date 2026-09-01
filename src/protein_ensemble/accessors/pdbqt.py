@@ -6,8 +6,8 @@ import tempfile
 from pathlib import Path
 
 from protein_ensemble.accessors import register_accessor
-from protein_ensemble.exceptions import MissingDependencyError
-from protein_ensemble.models import Member
+from protein_ensemble.shared.exceptions import MissingDependencyError
+from protein_ensemble.shared.models import Member
 
 _TEMPLATE_FAILURE_PREFIX = "- Template matching failed for: "
 _DEFAULT_KEEP_HETATMS = {"ZN", "MG", "CA", "FE", "HEM"}
