@@ -958,6 +958,7 @@ source = { editable = "." }
 dependencies = [
     { name = "blake3" },
     { name = "fsspec" },
+    { name = "pydantic" },
 ]
 
 [package.optional-dependencies]
@@ -990,6 +991,7 @@ requires-dist = [
     { name = "fsspec", extras = ["s3"], marker = "extra == 's3'", specifier = ">=2026.7.0" },
     { name = "gemmi", marker = "extra == 'pdbqt'", specifier = ">=0.7.5" },
     { name = "meeko", marker = "extra == 'pdbqt'", specifier = ">=0.8.0" },
+    { name = "pydantic", specifier = ">=2.13.5" },
 ]
 provides-extras = ["s3", "pdbqt", "cli"]
 
