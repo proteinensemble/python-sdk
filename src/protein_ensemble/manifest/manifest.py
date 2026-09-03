@@ -13,12 +13,12 @@ from protein_ensemble.shared.exceptions import (
     MemberNotFoundError,
     StructureContentHashMismatchError,
 )
-from protein_ensemble.shared.models import CapabilitiesRequiredItem, Member, Model, WeightScheme
+from protein_ensemble.shared.models import CapabilitiesRequiredItem, Member, ProteinEnsemble, WeightScheme
 
 
 class Manifest:
-    def __init__(self, model: Model, *, manifest_dir: Path) -> None:
-        self._model = model
+    def __init__(self, protein_ensemble: ProteinEnsemble, *, manifest_dir: Path) -> None:
+        self._protein_ensemble = protein_ensemble
         self._manifest_dir = manifest_dir
 
     @classmethod
@@ -33,12 +33,12 @@ class Manifest:
         manifest_path = manifest_dir / "manifest.json"
         with manifest_path.open("rb") as f:
             raw = json.load(f)
-        model = Model.model_validate(raw)
+        protein_ensemble = ProteinEnsemble.model_validate(raw)
         if verify:
-            expected = compute_manifest_content_hash(model)
-            if expected != model.content_hash:
-                raise ManifestContentHashMismatchError(expected=expected, actual=model.content_hash)
-        return cls(model, manifest_dir=manifest_dir)
+            expected = compute_manifest_content_hash(protein_ensemble)
+            if expected != protein_ensemble.content_hash:
+                raise ManifestContentHashMismatchError(expected=expected, actual=protein_ensemble.content_hash)
+        return cls(protein_ensemble, manifest_dir=manifest_dir)
 
     @classmethod
     def create(
@@ -51,7 +51,7 @@ class Manifest:
         metadata: dict[str, Any] | None = None,
         manifest_dir: Path,
     ) -> Manifest:
-        model = Model(
+        protein_ensemble = ProteinEnsemble(
             schema_version="0.1.0",
             id=id,
             content_hash="pending:0",
@@ -64,19 +64,19 @@ class Manifest:
             metadata=metadata,
             members=members,
         )
-        model.content_hash = compute_manifest_content_hash(model)
-        return cls(model, manifest_dir=manifest_dir)
+        protein_ensemble.content_hash = compute_manifest_content_hash(protein_ensemble)
+        return cls(protein_ensemble, manifest_dir=manifest_dir)
 
     def save(self, manifest_dir: Path | None = None) -> None:
         target_dir = manifest_dir if manifest_dir is not None else self._manifest_dir
         target_dir.mkdir(parents=True, exist_ok=True)
-        payload = self._model.model_dump(mode="json", by_alias=True, exclude_none=True)
+        payload = self._protein_ensemble.model_dump(mode="json", by_alias=True, exclude_none=True)
         with (target_dir / "manifest.json").open("w") as f:
             json.dump(payload, f, indent=2)
 
     @property
-    def model(self) -> Model:
-        return self._model
+    def protein_ensemble(self) -> ProteinEnsemble:
+        return self._protein_ensemble
 
     @property
     def manifest_dir(self) -> Path:
@@ -84,11 +84,11 @@ class Manifest:
 
     @property
     def members(self) -> dict[str, Member]:
-        return self._model.members
+        return self._protein_ensemble.members
 
     def get_member(self, member_id: str) -> Member:
         try:
-            return self._model.members[member_id]
+            return self._protein_ensemble.members[member_id]
         except KeyError:
             raise MemberNotFoundError(member_id) from None
 
@@ -105,4 +105,4 @@ class Manifest:
             raise StructureContentHashMismatchError(member_id, expected=actual, actual=member.structure_hash)
 
     def __repr__(self) -> str:
-        return f"Manifest(id={self._model.id!r}, members={len(self._model.members)})"
+        return f"Manifest(id={self._protein_ensemble.id!r}, members={len(self._protein_ensemble.members)})"
