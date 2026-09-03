@@ -13,7 +13,7 @@ class CapabilitiesRequiredItem(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
-class Type(StrEnum):
+class WeightType(StrEnum):
     uniform = "UNIFORM"
     equilibrium_probability = "EQUILIBRIUM_PROBABILITY"
 
@@ -23,7 +23,9 @@ class WeightScheme(BaseModel):
         extra="forbid",
         populate_by_name=True,
     )
-    type: Annotated[Type, Field(description="Defines how member weights are interpreted.")]
+    weight_type: Annotated[
+        WeightType | None, Field(alias="weightType", description="Defines how member weights are interpreted.")
+    ] = None
     normalized: Annotated[
         bool | None,
         Field(description="Whether explicit member weights are normalized according to the semantic contract."),
@@ -38,8 +40,7 @@ class Structure(BaseModel):
     uri: Annotated[
         str,
         Field(
-            description="URI reference to the structural resource. Relative references are resolved"
-            " relative to the manifest.",
+            description="URI reference to the structural resource. Relative references are resolved relative to the manifest.",
             min_length=1,
         ),
     ]
@@ -47,8 +48,7 @@ class Structure(BaseModel):
         int | None,
         Field(
             alias="modelIndex",
-            description="Zero-based model index within the referenced structural resource. When omitted,"
-            " the referenced resource represents a single structural member.",
+            description="Zero-based model index within the referenced structural resource. When omitted, the referenced resource represents a single structural member.",
             ge=0,
         ),
     ] = None
@@ -62,8 +62,7 @@ class Weight(BaseModel):
     value: Annotated[
         float,
         Field(
-            description="Member weight. Its interpretation and permitted range are defined by weightScheme"
-            " and the semantic contract."
+            description="Member weight. Its interpretation and permitted range are defined by weightScheme and the semantic contract."
         ),
     ]
 
@@ -85,7 +84,7 @@ class Member(BaseModel):
     weight: Weight | None = None
 
 
-class Model(BaseModel):
+class ProteinEnsemble(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
@@ -120,8 +119,7 @@ class Model(BaseModel):
     metadata: Annotated[
         dict[str, Any] | None,
         Field(
-            description="Non-normative metadata. Metadata fields have no PE core semantic meaning unless"
-            " explicitly defined by the specification."
+            description="Non-normative metadata. Metadata fields have no PE core semantic meaning unless explicitly defined by the specification."
         ),
     ] = None
     members: dict[str, Member]

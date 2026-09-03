@@ -109,7 +109,3 @@ def generate_manifest(
     manifest = builder.build(manifest_dir=out)
     manifest.save()
     logger.info("wrote manifest bundle: %s (%d members)", out, len(structure_paths))
-
-
-if __name__ == "__main__":
-    generate_manifest()

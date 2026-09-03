@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Protein Ensemble",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -56,7 +57,7 @@
         "type"
       ],
       "properties": {
-        "type": {
+        "weightType": {
           "type": "string",
           "enum": [
             "UNIFORM",

@@ -29,7 +29,7 @@ dev = ["pre-commit>=4.6.2", "pyright>=1.1.411", "ruff>=0.16.5"]
 input = "schemas/v0/manifest.schema.json"
 input-file-type = "jsonschema"
 
-output = "src/protein_ensemble/models.py"
+output = "src/protein_ensemble/shared/models.py"
 output-model-type = "pydantic_v2.BaseModel"
 
 preset = "standard-py312-20260826"
@@ -53,4 +53,10 @@ select = [
 
 [tool.ruff.lint.per-file-ignores]
 # generated code
-"src/protein_ensemble/models.py" = ["D212", "E501", "I001", "UP007", "UP037"]
+"src/protein_ensemble/shared/models.py" = [
+    "D212",
+    "E501",
+    "I001",
+    "UP007",
+    "UP037",
+]
