@@ -2,7 +2,8 @@
 
 import json
 from pathlib import Path
-from typing import Any  # Replace with actual Model import if needed
+
+from protein_ensemble.shared.models import ProteinEnsemble
 
 from .exceptions import InvalidContentHashError
 from .registry import get_hasher
@@ -35,15 +36,15 @@ def verify_content_hash(data: bytes, content_hash: str) -> bool:
     return hasher.hexdigest(data) == expected_digest
 
 
-def compute_manifest_content_hash(model: Any, *, algorithm: str = "blake3") -> str:
-    payload = model.model_dump(mode="json", by_alias=True, exclude={"content_hash"}, exclude_none=True)
+def compute_manifest_content_hash(protein_ensemble: ProteinEnsemble, *, algorithm: str = "blake3") -> str:
+    payload = protein_ensemble.model_dump(mode="json", by_alias=True, exclude={"content_hash"}, exclude_none=True)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return compute_content_hash(canonical, algorithm=algorithm)
 
 
-def verify_manifest_content_hash(model: Any) -> bool:
-    expected = compute_manifest_content_hash(model)
-    return expected == model.content_hash
+def verify_manifest_content_hash(protein_ensemble: ProteinEnsemble) -> bool:
+    expected = compute_manifest_content_hash(protein_ensemble)
+    return expected == protein_ensemble.content_hash
 
 
 def verify_structure_content_hash(path: Path, structure_hash: str) -> bool:
