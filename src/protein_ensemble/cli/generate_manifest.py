@@ -27,13 +27,15 @@ DEFAULT_HASH_ALGORITHM = "blake3"
 
 @click.command(help="Generate a Protein Ensemble manifest bundle from a directory of structure files.")
 @click.option(
-    "--structures-dir",
+    "--input",
+    "input_path",
     type=click.Path(exists=True, file_okay=False, path_type=Path),
     required=True,
     help="Directory containing one structure file per ensemble member.",
 )
 @click.option(
-    "--out",
+    "--output",
+    "output_path",
     type=click.Path(path_type=Path),
     required=True,
     help="Output bundle directory (will contain manifest.json and members/).",
@@ -46,14 +48,7 @@ DEFAULT_HASH_ALGORITHM = "blake3"
     help="Identifier for the ensemble.",
 )
 @click.option(
-    "--structure-glob",
-    type=str,
-    default=DEFAULT_STRUCTURE_GLOB,
-    show_default=True,
-    help="Glob pattern (relative to --structures-dir) selecting structure files.",
-)
-@click.option(
-    "--members-subdir",
+    "--members",
     type=str,
     default=DEFAULT_MEMBERS_SUBDIR,
     show_default=True,
@@ -66,19 +61,26 @@ DEFAULT_HASH_ALGORITHM = "blake3"
     show_default=True,
     help="Content hash algorithm to use for structureHash (must be registered in hashing.py).",
 )
+@click.option(
+    "--structure-glob",
+    type=str,
+    default=DEFAULT_STRUCTURE_GLOB,
+    show_default=True,
+    help="Glob pattern (relative to --structures-dir) selecting structure files.",
+)
 def generate_manifest(
-    structures_dir: Path,
-    out: Path,
+    input_path: Path,
+    output_path: Path,
     ensemble_id: str,
-    structure_glob: str,
-    members_subdir: str,
+    members: str,
     hash_algorithm: str,
+    structure_glob: str,
 ) -> None:
-    structure_paths = sorted(p for p in structures_dir.glob(structure_glob) if p.is_file())
+    structure_paths = sorted(p for p in input_path.glob(structure_glob) if p.is_file())
     if not structure_paths:
-        raise click.ClickException(f"no files matching {structure_glob!r} found under {structures_dir}")
+        raise click.ClickException(f"no files matching {structure_glob!r} found under {input_path}")
 
-    members_dir = out / members_subdir
+    members_dir = output_path / members
     members_dir.mkdir(parents=True, exist_ok=True)
 
     builder = ManifestBuilder(id=ensemble_id)
@@ -100,12 +102,12 @@ def generate_manifest(
             shutil.copy2(source_path, dest_path)
 
         member = Member(
-            structure=Structure(uri=f"{members_subdir}/{source_path.name}"),
+            structure=Structure(uri=f"{members}/{source_path.name}"),
             structure_hash=source_hash,
         )
         builder.add_member(member_id, member)
         logger.info("added member: %s (%s)", member_id, source_path.name)
 
-    manifest = builder.build(manifest_dir=out)
+    manifest = builder.build(manifest_dir=output_path)
     manifest.save()
-    logger.info("wrote manifest bundle: %s (%d members)", out, len(structure_paths))
+    logger.info("wrote manifest bundle: %s (%d members)", output_path, len(structure_paths))
