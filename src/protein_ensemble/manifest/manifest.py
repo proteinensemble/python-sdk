@@ -7,13 +7,19 @@ from pathlib import Path
 from typing import Any
 
 from protein_ensemble.hashing import compute_content_hash_file, compute_manifest_content_hash, parse_content_hash
-from protein_ensemble.manifest.io import resolve_structure_path, stage_manifest_bundle
 from protein_ensemble.shared.exceptions import (
     ManifestContentHashMismatchError,
     MemberNotFoundError,
     StructureContentHashMismatchError,
 )
 from protein_ensemble.shared.models import CapabilitiesRequiredItem, Member, ProteinEnsemble, WeightScheme
+
+MANIFEST_FILENAME = "manifest.json"
+
+
+def _resolve_local_path(location: str | Path, *, base_dir: Path) -> Path:
+    path = Path(location)
+    return path if path.is_absolute() else base_dir / path
 
 
 class Manifest:
@@ -22,16 +28,9 @@ class Manifest:
         self._manifest_dir = manifest_dir
 
     @classmethod
-    def load(
-        cls,
-        uri: str,
-        *,
-        verify: bool = True,
-        dest_dir: Path | None = None,
-    ) -> Manifest:
-        manifest_dir = stage_manifest_bundle(uri, dest_dir=dest_dir)
-        manifest_path = manifest_dir / "manifest.json"
-        with manifest_path.open("rb") as f:
+    def load(cls, manifest_dir: Path, *, verify: bool = True) -> Manifest:
+        manifest_dir = Path(manifest_dir)
+        with (manifest_dir / MANIFEST_FILENAME).open("rb") as f:
             raw = json.load(f)
         protein_ensemble = ProteinEnsemble.model_validate(raw)
         if verify:
@@ -71,7 +70,7 @@ class Manifest:
         target_dir = manifest_dir if manifest_dir is not None else self._manifest_dir
         target_dir.mkdir(parents=True, exist_ok=True)
         payload = self._protein_ensemble.model_dump(mode="json", by_alias=True, exclude_none=True)
-        with (target_dir / "manifest.json").open("w") as f:
+        with (target_dir / MANIFEST_FILENAME).open("w") as f:
             json.dump(payload, f, indent=2)
 
     @property
@@ -94,15 +93,14 @@ class Manifest:
 
     def structure_path(self, member_id: str) -> Path:
         member = self.get_member(member_id)
-        return resolve_structure_path(member.structure, manifest_dir=self._manifest_dir)
+        return _resolve_local_path(str(member.structure), base_dir=self._manifest_dir)
 
     def verify_structure_content(self, member_id: str) -> None:
         member = self.get_member(member_id)
-        path = resolve_structure_path(member.structure, manifest_dir=self._manifest_dir)
         algorithm, _ = parse_content_hash(member.structure_hash)
-        actual = compute_content_hash_file(path, algorithm=algorithm)
+        actual = compute_content_hash_file(self.structure_path(member_id), algorithm=algorithm)
         if actual != member.structure_hash:
-            raise StructureContentHashMismatchError(member_id, expected=actual, actual=member.structure_hash)
+            raise StructureContentHashMismatchError(member_id, expected=member.structure_hash, actual=actual)
 
     def __repr__(self) -> str:
         return f"Manifest(id={self._protein_ensemble.id!r}, members={len(self._protein_ensemble.members)})"

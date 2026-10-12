@@ -7,13 +7,12 @@ requires-python = ">=3.12"
 authors = [{ name = "Mike Micatka", email = "mike.micatka@gmail.com" }]
 license = { text = "MIT" }
 
-dependencies = ["blake3>=1.0.9", "fsspec>=2026.7.0", "pydantic>=2.13.5"]
+dependencies = ["blake3>=1.0.9", "pydantic>=2.13.5"]
 
 [project.scripts]
 generate-manifest = "protein_ensemble.cli:generate_manifest"
 
 [project.optional-dependencies]
-s3 = ["fsspec[s3]>=2026.7.0"]
 pdbqt = ["gemmi>=0.7.5", "meeko>=0.8.0"]
 cli = ["click>=8.5.0"]
 
