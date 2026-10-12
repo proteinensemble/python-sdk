@@ -25,6 +25,16 @@ DEFAULT_STRUCTURE_GLOB = "*"
 DEFAULT_HASH_ALGORITHM = "blake3"
 
 
+def sync_structure(source_path: Path, dest_path: Path, source_hash: str, hash_algorithm: str) -> None:
+    if dest_path.is_file():
+        dest_hash = compute_content_hash_file(dest_path, algorithm=hash_algorithm)
+        if dest_hash == source_hash:
+            logger.info("unchanged, skipping copy: %s", source_path.name)
+            return
+        logger.info("changed, re-copying: %s", source_path.name)
+    shutil.copyfile(source_path, dest_path)
+
+
 @click.command(help="Generate a Protein Ensemble manifest bundle from a directory of structure files.")
 @click.option(
     "--input",
@@ -90,16 +100,7 @@ def generate_manifest(
         dest_path = members_dir / source_path.name
 
         source_hash = compute_content_hash_file(source_path, algorithm=hash_algorithm)
-
-        if dest_path.is_file():
-            dest_hash = compute_content_hash_file(dest_path, algorithm=hash_algorithm)
-            if dest_hash == source_hash:
-                logger.info("unchanged, skipping copy: %s", source_path.name)
-            else:
-                logger.info("changed, re-copying: %s", source_path.name)
-                shutil.copy2(source_path, dest_path)
-        else:
-            shutil.copy2(source_path, dest_path)
+        sync_structure(source_path, dest_path, source_hash, hash_algorithm)
 
         member = Member(
             structure=Structure(uri=f"{members}/{source_path.name}"),
