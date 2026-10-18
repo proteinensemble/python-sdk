@@ -93,7 +93,7 @@ class Manifest:
 
     def structure_path(self, member_id: str) -> Path:
         member = self.get_member(member_id)
-        return _resolve_local_path(str(member.structure), base_dir=self._manifest_dir)
+        return _resolve_local_path(member.structure.uri, base_dir=self._manifest_dir)
 
     def verify_structure_content(self, member_id: str) -> None:
         member = self.get_member(member_id)
